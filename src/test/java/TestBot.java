@@ -1,4 +1,4 @@
-import org.example.TestApp;
+import org.example.App;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -6,12 +6,12 @@ import java.util.Scanner;
 
 public class TestBot {
     public static String run(String input) {
-        Scanner sc = new Scanner("종료\n");
+        Scanner sc = new Scanner(input + "종료\n");
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
 
-        TestApp app = new TestApp();
+        App app = new App();
         app.run();
 
         return out.toString();

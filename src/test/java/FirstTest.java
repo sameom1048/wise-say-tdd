@@ -1,10 +1,6 @@
-import org.example.TestApp;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.util.Scanner;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FirstTest {
@@ -27,5 +23,18 @@ public class FirstTest {
 
         assertThat(out.toString())
                 .containsSubsequence("== 명언 앱 ==", "명언앱을 종료합니다.");
+    }
+
+    @Test
+    @DisplayName("등록 - 명언 1개 입력")
+    void t5() {
+        String out = TestBot.run("""
+            등록
+            현재를 사랑하라.
+            작자미상
+            """);
+
+        assertThat(out.toString())
+                .containsSubsequence("명언 : ", "작가 : ");
     }
 }
