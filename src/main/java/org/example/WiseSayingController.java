@@ -1,6 +1,5 @@
 package org.example;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -30,7 +29,7 @@ public class WiseSayingController {
 
         List<WiseSaying> wiseSayingList = wiseSayingService.getAllItems();
 
-        wiseSayingList.reversed().forEach(w -> {
+        wiseSayingList.forEach(w -> {
             System.out.printf("%d / %s / %s\n", w.getId(), w.getAuthor(), w.getContent());
         });
     }
