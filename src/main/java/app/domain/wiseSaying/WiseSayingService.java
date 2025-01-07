@@ -1,14 +1,21 @@
 package app.domain.wiseSaying;
 
+import app.domain.wiseSaying.repository.WiseSayingFileRepository;
+import app.domain.wiseSaying.repository.WiseSayingMemRepository;
+import app.domain.wiseSaying.repository.WiseSayingRepository;
+
 import java.util.List;
 import java.util.Optional;
+
+// 무기 - 활
+// 무기 - 칼
 
 public class WiseSayingService {
 
     private final WiseSayingRepository wiseSayingRepository;
 
     public WiseSayingService() {
-        wiseSayingRepository = new WiseSayingRepository();
+        wiseSayingRepository = new WiseSayingFileRepository();
     }
 
     public WiseSaying write(String content, String author) {
