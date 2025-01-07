@@ -125,4 +125,18 @@ public class FileTest {
                 .isFalse();
     }
 
+    @Test
+    @DisplayName("파일 삭제 -> 폴더가 비어있지 않을 때 삭제")
+    void t8() {
+
+        String path = "test/test2/test.txt";
+
+        Util.File.deleteForce(path);    // 강제 삭제
+
+        boolean rst = Files.exists(Paths.get(path));
+        assertThat(rst)
+                .isFalse();
+
+    }
+
 }
