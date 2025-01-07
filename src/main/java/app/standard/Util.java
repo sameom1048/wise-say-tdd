@@ -103,7 +103,7 @@ public class Util {
             for(String key : map.keySet()) {
                 String value = map.get("name").toString();
 
-                tmp = "{\n" + "  \"%s\" : " + "\"%s\"" + "\n}";
+                tmp = "{\n" + "    \"%s\" : " + "\"%s\"" + "\n}";
                 tmp = tmp.formatted(key, value);
                 System.out.println(key + " : " + map.get(key));
             }
