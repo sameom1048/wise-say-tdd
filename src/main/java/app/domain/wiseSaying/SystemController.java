@@ -1,4 +1,4 @@
-package org.example;
+package app.domain.wiseSaying;
 
 public class SystemController {
     public void exit() {
