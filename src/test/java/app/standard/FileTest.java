@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +25,7 @@ public class FileTest {
     @AfterAll
     static void afterAll() {
         System.out.println("테스트 실행 후에 한번 실행");
-        Util.File.delete("test");
+        Util.File.deleteForce("test");
     }
 
     // 4. 테스트 종료 후에 test 폴더 삭제
@@ -126,17 +127,58 @@ public class FileTest {
     }
 
     @Test
-    @DisplayName("파일 삭제 -> 폴더가 비어있지 않을 때 삭제")
+    @DisplayName("파일 생성 -> 없는 폴더에 생성 시도하면 폴더를 생성한 후에 파일 생성")
     void t8() {
-
         String path = "test/test2/test.txt";
 
-        Util.File.deleteForce(path);    // 강제 삭제
+        Util.File.createFile(path);
+
+        boolean rst = Files.exists(Paths.get(path));
+        assertThat(rst)
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("파일 삭제 -> 폴더가 비어있지 않을 때 안의 내용까지 같이 삭제")
+    void t9() {
+        String path = "test/test2/test.txt";
+
+        Util.File.deleteForce(path); // 강제 삭제
 
         boolean rst = Files.exists(Paths.get(path));
         assertThat(rst)
                 .isFalse();
-
     }
 
+    @Test
+    @DisplayName("특정 폴더의 파일 목록을 가져오기")
+    void t10() {
+
+        String path1 = "test/test1.txt";
+        String path2 = "test/test2.txt";
+        String path3 = "test/test3.txt";
+
+        Util.File.write(path1, "test1");
+        Util.File.write(path2, "test2");
+        Util.File.write(path3, "test3");
+
+        assertThat(Files.exists(Paths.get(path1)))
+                .isTrue();
+
+        assertThat(Files.exists(Paths.get(path2)))
+                .isTrue();
+
+        assertThat(Files.exists(Paths.get(path3)))
+                .isTrue();
+
+
+        List<Path> paths = Util.File.getPaths("test/");
+
+        assertThat(paths)
+                .hasSize(3)
+                .contains(Paths.get(path1))
+                .contains(Paths.get(path2))
+                .contains(Paths.get(path3));
+
+    }
 }
