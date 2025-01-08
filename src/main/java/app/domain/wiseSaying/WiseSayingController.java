@@ -32,7 +32,7 @@ public class WiseSayingController {
 
         List<WiseSaying> wiseSayingList = wiseSayingService.getAllItems();
 
-        wiseSayingList.forEach(w -> {
+        wiseSayingList.reversed().forEach(w -> {
             System.out.printf("%d / %s / %s\n", w.getId(), w.getAuthor(), w.getContent());
         });
     }
