@@ -36,6 +36,10 @@ public class Util {
             return "";
         }
 
+        public static void write(String file, int content) {
+            write(file, String.valueOf(content));
+        }
+
         public static void write(String file, String content) {
 
             Path filePath = Paths.get(file);
@@ -125,9 +129,31 @@ public class Util {
 
             return List.of();
         }
+
+        public static boolean exists(String filePath) {
+            return Files.exists(Paths.get(filePath));
+        }
     }
 
     public static class Json {
+
+
+        public static String listToJson(List<Map<String, Object>> mapList) {
+            StringBuilder jsonBuilder = new StringBuilder();
+
+            jsonBuilder.append("[\n");
+
+            String str = mapList.stream() // map들이 들어있다
+                    .map(Util.Json::mapToJson)
+                    .map(s -> "    " + s)
+                    .map(s -> s.replaceAll("\n", "\n    "))
+                    .collect(Collectors.joining(",\n"));
+
+            jsonBuilder.append(str);
+            jsonBuilder.append("\n]");
+
+            return jsonBuilder.toString();
+        }
 
         public static String mapToJson(Map<String, Object> map) {
 
@@ -155,7 +181,7 @@ public class Util {
         public static Map<String, Object> readAsMap(String filePath) {
             String jsonStr = File.readAsString(filePath);
 
-            if(jsonStr.isEmpty()) {
+            if (jsonStr.isEmpty()) {
                 return new LinkedHashMap<>();
             }
 
@@ -177,11 +203,11 @@ public class Util {
                         String key = p[0].replaceAll("\"", "");
                         String value = p[1];
 
-                        if(value.startsWith("\"")) {
+                        if (value.startsWith("\"")) {
                             resultMap.put(key, value.replaceAll("\"", ""));
-                        } else if(value.contains(".")) {
+                        } else if (value.contains(".")) {
                             resultMap.put(key, Double.parseDouble(value));
-                        } else if(value.equals("true") || value.equals("false")) {
+                        } else if (value.equals("true") || value.equals("false")) {
                             resultMap.put(key, Boolean.parseBoolean(value));
                         } else {
                             resultMap.put(key, Integer.parseInt(value));
@@ -190,5 +216,6 @@ public class Util {
 
             return resultMap;
         }
+
     }
 }
