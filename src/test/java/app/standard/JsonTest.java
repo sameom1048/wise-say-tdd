@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -166,6 +168,40 @@ public class JsonTest {
         assertThat(wiseSaying.getId()).isEqualTo(1);
         assertThat(wiseSaying.getContent()).isEqualTo("aaa");
         assertThat(wiseSaying.getAuthor()).isEqualTo("bbb");
+
+    }
+
+    @Test
+    @DisplayName("wiseSaying list를 json 문자열로 변환")
+    void t9() {
+
+        WiseSaying wiseSaying1 = new WiseSaying(1, "aaa", "bbb");
+        WiseSaying wiseSaying2 = new WiseSaying(2, "ccc", "ddd");
+
+        List<WiseSaying> wiseSayings = List.of(wiseSaying1, wiseSaying2);
+
+        List<Map<String, Object>> mapList = wiseSayings.stream()
+                .map(WiseSaying::toMap)
+                .toList();
+
+
+        String jsonStr = Util.Json.listToJson(mapList);
+
+        assertThat(jsonStr)
+                .isEqualTo("""
+                        [
+                            {
+                                "id" : 1,
+                                "content" : "aaa",
+                                "author" : "bbb"
+                            },
+                            {
+                                "id" : 2,
+                                "content" : "ccc",
+                                "author" : "ddd"
+                            }
+                        ]
+                        """.stripIndent().trim());
 
     }
 }

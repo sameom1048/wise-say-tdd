@@ -1,9 +1,7 @@
 package app.standard;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,15 +13,14 @@ public class FileTest {
 
     // 3. 테스트 시작 전에 test 폴더 생성
     // 테스트 전처리
-
-    @BeforeAll
-    static void beforeAll() {
+    @BeforeEach
+    void beforeEach() {
         System.out.println("테스트 실행 전에 한번 실행");
         Util.File.createDir("test");
     }
 
-    @AfterAll
-    static void afterAll() {
+    @AfterEach
+    void afterEach() {
         System.out.println("테스트 실행 후에 한번 실행");
         Util.File.deleteForce("test");
     }
