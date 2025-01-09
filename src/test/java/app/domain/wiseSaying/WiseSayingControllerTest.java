@@ -1,13 +1,29 @@
 package app.domain.wiseSaying;
 
+import app.domain.wiseSaying.repository.WiseSayingFileRepository;
+import app.global.AppConfig;
 import app.standard.TestBot;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import app.standard.Util;
+import org.junit.jupiter.api.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class WiseSayingControllerTest {
 
+    @BeforeAll
+    static void beforeAll() {
+        AppConfig.setTestMode();
+    }
+
+    @BeforeEach
+    void before() {
+        Util.File.deleteForce(AppConfig.getDbPath());
+    }
+
+    @AfterEach
+    void after() {
+        Util.File.deleteForce(AppConfig.getDbPath());
+    }
 
     @Test
     void t1() {
@@ -188,5 +204,175 @@ public class WiseSayingControllerTest {
         assertThat(out)
                 .doesNotContain("1 / 작자미상 / 현재를 사랑하라.")
                 .contains("1 / 새 작가 / 새 명언 내용");
+    }
+
+    @Test
+    @DisplayName("목록 - 명언이 하나도 등록되지 않았을 때")
+    void t13() {
+        String out = TestBot.run("""
+                목록
+                """);
+
+        assertThat(out)
+                .contains("등록된 명언이 없습니다.");
+    }
+
+    @Test
+    @DisplayName("빌드")
+    void t14() {
+        String out = TestBot.run("""
+                등록
+                현재를 사랑하라.
+                작자미상
+                등록
+                과거에 집착하지 마라.
+                작자미상
+                빌드
+                """);
+
+
+        boolean rst = Util.File.exists(WiseSayingFileRepository.getBuildPath());
+        assertThat(rst).isTrue();
+
+    }
+
+    @Test
+    @DisplayName("검색 - 검색 타입과 키워드를 입력받아 키워드를 포함하는 명언을 출력한다.")
+    void t15() {
+        String out = TestBot.run("""
+                등록
+                현재를 사랑하라.
+                작자미상
+                등록
+                과거에 집착하지 마라.
+                작자미상
+                목록?keywordType=content&keyword=과거
+                """);
+
+        assertThat(out)
+                .contains("2 / 작자미상 / 과거에 집착하지 마라.")
+                .doesNotContain("1 / 작자미상 / 현재를 사랑하라.");
+    }
+
+    @Test
+    @DisplayName("페이징 - 샘플데이터 생성")
+    void t16() {
+
+        TestBot.makeSample(10);
+
+        String out = TestBot.run("""
+                목록
+                """);
+
+        assertThat(out)
+                .contains("10 / 작가10 / 명언10");
+    }
+
+    @Test
+    @DisplayName("페이징 - 페이징 UI 출력")
+    void t17() {
+
+        TestBot.makeSample(10);
+
+        String out = TestBot.run("""
+                목록?page=2
+                """);
+
+        assertThat(out)
+                .contains("1 / [2]");
+
+    }
+
+    @Test
+    @DisplayName("페이징 - 페이징 UI 출력, 샘플 개수에 맞는 페이지 출력")
+    void t18() {
+
+        TestBot.makeSample(30);
+
+        String out = TestBot.run("""
+                목록?page=4
+                """);
+
+        assertThat(out)
+                .contains("1 / 2 / 3 / [4] / 5 / 6");
+
+    }
+
+    @Test
+    @DisplayName("페이징 - 실제 페이제 맞는 데이터 가져오기1")
+    void t19() {
+        TestBot.makeSample(15);
+
+        // 1 / 작가1 / 명언1
+        // 2 / 작가2 / 명언2
+        // 3 / 작가3 / 명언3
+        // ....
+        // 15 / 작가15 / 명언15
+
+        // 1, 10, 11, 12, 13, 14, 15
+
+        // 15, 14, 13, 12, 11  - 1 페이지
+        // 10, 1 - 2 페이지
+
+
+        String out = TestBot.run("""
+                목록?keywordType=content&keyword=1
+                """);
+
+        assertThat(out)
+                .containsSubsequence("15 / 작가15 / 명언15", "14 / 작가14 / 명언14")
+                .doesNotContain("10 / 작가10 / 명언10");
+
+        assertThat(out)
+                .contains("[1] / 2");
+
+    }
+
+    @Test
+    @DisplayName("페이징 - 실제 페이제 맞는 데이터 가져오기2")
+    void t20() {
+        TestBot.makeSample(15);
+        String out = TestBot.run("""
+                목록?keywordType=content&keyword=1&page=2
+                """);
+
+        assertThat(out)
+                .containsSubsequence("10 / 작가10 / 명언10", "1 / 작가1 / 명언1")
+                .doesNotContain("11 / 작가11 / 명언11");
+
+        assertThat(out)
+                .contains("1 / [2]");
+    }
+
+    @Test
+    @DisplayName("페이징 - 실제 페이제 맞는 데이터 가져오기3")
+    void t21() {
+        TestBot.makeSample(30);
+        String out = TestBot.run("""
+                목록?page=3
+                """);
+
+        assertThat(out)
+                .contains("18 / 작가18 / 명언18")
+                .contains("1 / 2 / [3] / 4 / 5 / 6");
+    }
+
+    @Test
+    @DisplayName("검색 UI 출력")
+    void t22() {
+
+        String out = TestBot.run("""
+                등록
+                현재를 사랑하라.
+                작자미상
+                등록
+                과거에 집착하지 마라.
+                작자미상
+                목록?keywordType=content&keyword=과거
+                """);
+
+        assertThat(out)
+                .contains("검색타입 : content")
+                .contains("검색어 : 과거");
     }
 }
