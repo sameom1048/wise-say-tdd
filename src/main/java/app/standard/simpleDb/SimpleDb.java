@@ -63,6 +63,9 @@ public class SimpleDb {
 
     public <T> T selectRow(String sql, List<Object> params, Class<T> cls) {
         List<T> rows = selectRows(sql, params, cls);
+        if(rows.isEmpty()) {
+            return null;
+        }
         return rows.getFirst();
     }
 
