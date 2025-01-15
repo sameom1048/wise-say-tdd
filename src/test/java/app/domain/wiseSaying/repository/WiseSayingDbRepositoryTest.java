@@ -75,4 +75,49 @@ public class WiseSayingDbRepositoryTest {
 
     }
 
+    @Test
+    @DisplayName("현재 저장된 명언의 개수를 가져오는 count")
+    void t5() {
+
+        WiseSaying wiseSaying1 = new WiseSaying("aaa", "bbb");
+        wiseSayingDbRepository.save(wiseSaying1);
+
+        WiseSaying wiseSaying2 = new WiseSaying("ccc", "ddd");
+        wiseSayingDbRepository.save(wiseSaying2);
+
+
+        long count = wiseSayingDbRepository.count();
+
+        assertThat(count)
+                .isEqualTo(2);
+
+    }
+
+//    @Test
+//    @DisplayName("페이지 정보와 결과 가져오기")
+//    void t6() {
+//
+//        WiseSaying wiseSaying1 = new WiseSaying("aaa", "bbb");
+//        wiseSayingDbRepository.save(wiseSaying1);
+//
+//        WiseSaying wiseSaying2 = new WiseSaying("ccc", "ddd");
+//        wiseSayingDbRepository.save(wiseSaying2);
+//
+//        WiseSaying wiseSaying3 = new WiseSaying("eee", "fff");
+//        wiseSayingDbRepository.save(wiseSaying3);
+//
+//        int itemsPerPage = 5;
+//        int page = 1;
+//        Page<WiseSaying> pageContent = wiseSayingDbRepository.findAll(itemsPerPage, page);
+//
+//        List<WiseSaying> wiseSayings = pageContent.getContent();
+//        int totalItems = pageContent.getTotalItems();
+//        int totalPages = pageContent.getTotalPages();
+//
+//        assertThat(totalItems)
+//                .isEqualTo(3);
+//
+//        assertThat(totalPages)
+//                .isEqualTo(1);
+//    }
 }

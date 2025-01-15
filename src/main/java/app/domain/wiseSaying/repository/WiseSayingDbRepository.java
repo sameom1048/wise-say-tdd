@@ -86,4 +86,10 @@ public class WiseSayingDbRepository {
     public String getBuildPath() {
         return BUILD_PATH;
     }
+
+    public long count() {
+        return simpleDb.genSql()
+                .append("SELECT COUNT(*) FROM wise_saying")
+                .selectLong();
+    }
 }
