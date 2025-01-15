@@ -1,5 +1,6 @@
 package app.domain.wiseSaying.repository;
 
+import app.domain.wiseSaying.Page;
 import app.domain.wiseSaying.WiseSaying;
 import app.global.AppConfig;
 import app.standard.Util;
@@ -14,7 +15,6 @@ public class WiseSayingDbRepository {
 
     private static final String DB_PATH = AppConfig.getDbPath() + "/wiseSaying";
     private static final String BUILD_PATH = DB_PATH + "/build/data.json";
-
     private final SimpleDb simpleDb;
 
     public WiseSayingDbRepository() {
@@ -23,6 +23,7 @@ public class WiseSayingDbRepository {
 
     public void createWiseSayingTable() {
         simpleDb.run("DROP TABLE IF EXISTS wise_saying");
+
         simpleDb.run("""
                 CREATE TABLE wise_saying (
                     id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -31,6 +32,7 @@ public class WiseSayingDbRepository {
                 )
                 """);
     }
+
     public void truncateWiseSayingTable() {
         simpleDb.run(
                 "TRUNCATE wise_saying"
@@ -39,33 +41,52 @@ public class WiseSayingDbRepository {
 
     public WiseSaying save(WiseSaying wiseSaying) {
         Sql sql = simpleDb.genSql();
-
-        sql.append("INSERT INTO wise_saying ")
+        sql.append("INSERT INTO wise_saying")
                 .append("SET content = ?,", wiseSaying.getContent())
                 .append("author = ?", wiseSaying.getAuthor());
 
         long generatedId = sql.insert();
-
         wiseSaying.setId((int) generatedId);
+
         return wiseSaying;
     }
 
     public Optional<WiseSaying> findById(int id) {
+
         Sql sql = simpleDb.genSql();
-        sql.append("SELECT * FROM wise_saying WHERE id = ?", id);
+        sql.append("SELECT *")
+                .append("FROM wise_saying")
+                .append("WHERE id = ?", id);
+
         WiseSaying wiseSaying = sql.selectRow(WiseSaying.class);
 
-        if(wiseSaying == null) {
+        if (wiseSaying == null) {
             return Optional.empty();
         }
+
         return Optional.of(wiseSaying);
     }
 
     public boolean deleteById(int id) {
-        Sql sql = simpleDb.genSql();
-        sql.append("DELETE FROM wise_saying WHERE id = ?", id);
-        sql.delete();
-        return true;
+
+        int rst = simpleDb.genSql().append("DELETE FROM wise_saying")
+                .append("WHERE id = ?", id)
+                .delete();
+
+        return rst > 0;
+    }
+
+    Page<WiseSaying> findAll(int itemsPerPage, int page) {
+
+        long totalItems = count();
+
+        List<WiseSaying> content = simpleDb.genSql()
+                .append("SELECT *")
+                .append("FROM wise_saying")
+                .append("LIMIT ?, ?", (long) (page - 1) * itemsPerPage, itemsPerPage)
+                .selectRows(WiseSaying.class);
+
+        return new Page<>(content, (int)totalItems, itemsPerPage, page);
     }
 
     public List<WiseSaying> findAll() {
@@ -83,13 +104,14 @@ public class WiseSayingDbRepository {
         Util.File.write(BUILD_PATH, jsonStr);
     }
 
-    public String getBuildPath() {
+    public static String getBuildPath() {
         return BUILD_PATH;
     }
 
     public long count() {
         return simpleDb.genSql()
-                .append("SELECT COUNT(*) FROM wise_saying")
+                .append("SELECT COUNT(*)")
+                .append("FROM wise_saying")
                 .selectLong();
     }
 }

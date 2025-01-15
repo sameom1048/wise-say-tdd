@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,22 @@ public class WiseSayingDbRepositoryTest {
 
         assertThat(wiseSaying.getId()).isEqualTo(1);
         assertThat(found).isEqualTo(wiseSaying);
+    }
+
+    @Test
+    @DisplayName("명언 삭제")
+    void t2() {
+
+        WiseSaying wiseSaying = new WiseSaying(1, "aaa", "bbb");
+
+        wiseSayingDbRepository.save(wiseSaying);
+        String filePath = WiseSayingFileRepository.getFilePath(wiseSaying.getId());
+
+        boolean delRst = wiseSayingDbRepository.deleteById(1);
+
+        boolean rst = Files.exists(Path.of(filePath));
+        assertThat(rst).isFalse();
+        assertThat(delRst).isTrue();
     }
 
     @Test
@@ -93,31 +111,33 @@ public class WiseSayingDbRepositoryTest {
 
     }
 
-//    @Test
-//    @DisplayName("페이지 정보와 결과 가져오기")
-//    void t6() {
-//
-//        WiseSaying wiseSaying1 = new WiseSaying("aaa", "bbb");
-//        wiseSayingDbRepository.save(wiseSaying1);
-//
-//        WiseSaying wiseSaying2 = new WiseSaying("ccc", "ddd");
-//        wiseSayingDbRepository.save(wiseSaying2);
-//
-//        WiseSaying wiseSaying3 = new WiseSaying("eee", "fff");
-//        wiseSayingDbRepository.save(wiseSaying3);
-//
-//        int itemsPerPage = 5;
-//        int page = 1;
-//        Page<WiseSaying> pageContent = wiseSayingDbRepository.findAll(itemsPerPage, page);
-//
-//        List<WiseSaying> wiseSayings = pageContent.getContent();
-//        int totalItems = pageContent.getTotalItems();
-//        int totalPages = pageContent.getTotalPages();
-//
-//        assertThat(totalItems)
-//                .isEqualTo(3);
-//
-//        assertThat(totalPages)
-//                .isEqualTo(1);
-//    }
+    @Test
+    @DisplayName("페이지 정보와 결과 가져오기")
+    void t6() {
+
+        WiseSaying wiseSaying1 = new WiseSaying("aaa", "bbb");
+        wiseSayingDbRepository.save(wiseSaying1);
+
+        WiseSaying wiseSaying2 = new WiseSaying("ccc", "ddd");
+        wiseSayingDbRepository.save(wiseSaying2);
+
+        WiseSaying wiseSaying3 = new WiseSaying("eee", "fff");
+        wiseSayingDbRepository.save(wiseSaying3);
+
+        int itemsPerPage = 5;
+        int page = 1;
+        Page<WiseSaying> pageContent = wiseSayingDbRepository.findAll(itemsPerPage, page);
+
+        List<WiseSaying> wiseSayings = pageContent.getContent();
+        int totalItems = pageContent.getTotalItems();
+        int totalPages = pageContent.getTotalPages();
+
+        assertThat(wiseSayings).hasSize(3);
+
+        assertThat(totalItems)
+                .isEqualTo(3);
+
+        assertThat(totalPages)
+                .isEqualTo(1);
+    }
 }
