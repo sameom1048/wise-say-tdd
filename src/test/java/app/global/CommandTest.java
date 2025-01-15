@@ -51,7 +51,7 @@ public class CommandTest {
     void t5() {
 
         Command cmd = new Command("삭제?id=2");
-        int id = cmd.getParamAsInt("id");
+        int id = cmd.getParamAsInt("id", -1);
 
         assertThat(id).isEqualTo(2);
     }
