@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class WiseSayingDbRepository {
+public class WiseSayingDbRepository implements WiseSayingRepository {
 
     private static final String DB_PATH = AppConfig.getDbPath() + "/wiseSaying";
     private static final String BUILD_PATH = DB_PATH + "/build/data.json";
@@ -21,32 +21,24 @@ public class WiseSayingDbRepository {
         this.simpleDb = new SimpleDb("localhost", "root", "hansung", "wiseSaying__test");
     }
 
-    public void createWiseSayingTable() {
-        simpleDb.run("DROP TABLE IF EXISTS wise_saying");
-
-        simpleDb.run("""
-                CREATE TABLE wise_saying (
-                    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-                    content VARCHAR(100) NOT NULL,
-                    author VARCHAR(100) NOT NULL
-                )
-                """);
-    }
-
-    public void truncateWiseSayingTable() {
-        simpleDb.run(
-                "TRUNCATE wise_saying"
-        );
-    }
-
     public WiseSaying save(WiseSaying wiseSaying) {
         Sql sql = simpleDb.genSql();
-        sql.append("INSERT INTO wise_saying")
-                .append("SET content = ?,", wiseSaying.getContent())
-                .append("author = ?", wiseSaying.getAuthor());
 
-        long generatedId = sql.insert();
-        wiseSaying.setId((int) generatedId);
+        if (wiseSaying.isNew()) {
+            sql.append("INSERT INTO wise_saying")
+                    .append("SET content = ?,", wiseSaying.getContent())
+                    .append("author = ?", wiseSaying.getAuthor());
+
+            long generatedId = sql.insert();
+            wiseSaying.setId((int) generatedId);
+
+            return wiseSaying;
+        }
+
+        sql.append("UPDATE wise_saying")
+                .append("SET content = ?,", wiseSaying.getContent())
+                .append("author = ?", wiseSaying.getAuthor())
+                .update();
 
         return wiseSaying;
     }
@@ -76,17 +68,17 @@ public class WiseSayingDbRepository {
         return rst > 0;
     }
 
-    Page<WiseSaying> findAll(int itemsPerPage, int page) {
+    public Page<WiseSaying> findAll(int itemsPerPage, int page) {
 
         long totalItems = count();
-
         List<WiseSaying> content = simpleDb.genSql()
                 .append("SELECT *")
                 .append("FROM wise_saying")
+                .append("ORDER BY id DESC")
                 .append("LIMIT ?, ?", (long) (page - 1) * itemsPerPage, itemsPerPage)
                 .selectRows(WiseSaying.class);
 
-        return new Page<>(content, (int)totalItems, itemsPerPage, page);
+        return new Page<>(content, (int) totalItems, itemsPerPage, page);
     }
 
     public List<WiseSaying> findAll() {
@@ -108,10 +100,79 @@ public class WiseSayingDbRepository {
         return BUILD_PATH;
     }
 
-    public long count() {
-        return simpleDb.genSql()
+    public int count() {
+        long cnt = simpleDb.genSql()
                 .append("SELECT COUNT(*)")
                 .append("FROM wise_saying")
                 .selectLong();
+
+        return (int) cnt;
     }
+
+    public int count(String ktype, String kw) {
+        Sql sql = simpleDb.genSql();
+        sql.append("SELECT *")
+                .append("FROM wise_saying");
+
+        if (ktype.equals("content")) {
+            sql.append("WHERE content LIKE CONCAT('%', ?, '%')", kw);
+        } else {
+            sql.append("WHERE author LIKE CONCAT('%', ?, '%')", kw);
+        }
+
+        long cnt = sql.selectLong();
+        return (int) cnt;
+    }
+
+    @Override
+    public void makeSampleData(int cnt) {
+        for (int i = 1; i <= cnt; i++) {
+            save(new WiseSaying("명언" + i, "작가" + i));
+        }
+    }
+
+    @Override
+    public Page<WiseSaying> findByKeyword(String ktype, String kw, int itemsPerPage, int page) {
+
+        int totalItems = count(ktype, kw); // 검색 결과 수
+
+        Sql sql = simpleDb.genSql();
+
+        sql.append("SELECT *")
+                .append("FROM wise_saying");
+
+        if (ktype.equals("content")) {
+            sql.append("WHERE content LIKE CONCAT('%', ?, '%')", kw);
+        } else {
+            sql.append("WHERE author LIKE CONCAT('%', ?, '%')", kw);
+        }
+
+        sql.append("ORDER BY id DESC")
+                .append("LIMIT ?, ?", (long) (page - 1) * itemsPerPage, itemsPerPage)
+                .selectRows(WiseSaying.class);
+
+        List<WiseSaying> content = sql.selectRows(WiseSaying.class);
+        return new Page(content, totalItems, itemsPerPage, page);
+    }
+
+    @Override
+    public void createTable() {
+        simpleDb.run("DROP TABLE IF EXISTS wise_saying");
+
+        simpleDb.run("""
+                CREATE TABLE wise_saying (
+                    id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
+                    content VARCHAR(100) NOT NULL,
+                    author VARCHAR(100) NOT NULL
+                )
+                """);
+    }
+
+    @Override
+    public void truncateTable() {
+        simpleDb.run(
+                "TRUNCATE wise_saying"
+        );
+    }
+
 }
