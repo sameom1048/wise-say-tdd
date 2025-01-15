@@ -1,12 +1,19 @@
 package app.domain.wiseSaying.repository;
 
 import app.domain.wiseSaying.WiseSaying;
+import app.global.AppConfig;
+import app.standard.Util;
 import app.standard.simpleDb.SimpleDb;
 import app.standard.simpleDb.Sql;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class WiseSayingDbRepository {
+
+    private static final String DB_PATH = AppConfig.getDbPath() + "/wiseSaying";
+    private static final String BUILD_PATH = DB_PATH + "/build/data.json";
 
     private final SimpleDb simpleDb;
 
@@ -52,5 +59,31 @@ public class WiseSayingDbRepository {
             return Optional.empty();
         }
         return Optional.of(wiseSaying);
+    }
+
+    public boolean deleteById(int id) {
+        Sql sql = simpleDb.genSql();
+        sql.append("DELETE FROM wise_saying WHERE id = ?", id);
+        sql.delete();
+        return true;
+    }
+
+    public List<WiseSaying> findAll() {
+        return simpleDb.genSql().append("SELECT *")
+                .append("FROM wise_saying")
+                .selectRows(WiseSaying.class);
+    }
+
+    public void build() {
+        List<Map<String, Object>> mapList = findAll().stream()
+                .map(WiseSaying::toMap)
+                .toList();
+
+        String jsonStr = Util.Json.listToJson(mapList);
+        Util.File.write(BUILD_PATH, jsonStr);
+    }
+
+    public String getBuildPath() {
+        return BUILD_PATH;
     }
 }
